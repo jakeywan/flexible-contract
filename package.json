@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "npx hardhat run --network goerli scripts/deployOracle.js",
-    "verify": "npx hardhat verify --network goerli 0x99eb96dee9Ad0930994f1f12e2c82f6E80985356",
+    "deploy": "npx hardhat run --network goerli scripts/deploy.js",
+    "verify": "npx hardhat verify --network goerli 0x4990eE12E3FbAE3bba41BfF86b7183960ad5E07a",
     "test": "npx hardhat test --network localhost"
   },
   "repository": {

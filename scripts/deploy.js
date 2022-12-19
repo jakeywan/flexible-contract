@@ -4,7 +4,7 @@ async function main() {
   console.log('Deploying contracts with the account:', deployer.address)
 
   // Deploy
-  const Contract = await ethers.getContractFactory('FlexibleContract')
+  const Contract = await ethers.getContractFactory('Contract')
   const contract = await Contract.deploy()
   console.log('Contract deployed to: ', contract.address)
 
