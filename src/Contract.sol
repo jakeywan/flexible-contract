@@ -16,15 +16,45 @@ contract FlexibleContract is Ownable, ERC721 {
     // OpenSea and others will pick this up, indicates metadata is frozen
     event PermanentURI(string _value, uint256 indexed _id);
 
+    /**
+     * @dev specifies the type of URI requested for a string
+     * @param SVG will append 'data:image/svg+xml;base64,' before base64 encoding this value
+     * @param HTML will append 'data:text/html;base64,' before base64 encoding this value
+     * @param URL will not do any transformations. pass a plain URL string or a data URI
+     * that is already properly encoded
+     */
+    enum UriType { SVG, HTML, URL }
+
+    /**
+     * @dev only added for a token id if it is specified as `isOnChain`
+     * @param image a plain string of the on chain work, either SVG, HTML, or
+     * a wildcard data type (in which case uploader must handle base64 encoding)
+     * @param dataType specifies how the dataURI should be constructed. if wildcard,
+     * the dataURI must be appended as part of the artwork
+     * @param animationUrl optional value that may also be an on chain work
+     * @param animationUrlDataType data type of the optional animationUrl
+     * @param jsonKeyValues DO NOT INCLUDE CURLY BRACKETS, just the key-values.  the
+     * brackets will be appended by the contract.
+     */
     struct OnChainData {
-        string image; // this will be base64 encoded and inserted into json
-        string jsonKeyValues; // this be base64 encoded again, do not include brackets
+        string image;
+        UriType imageUriType;
+        string animationUrl;
+        UriType animationUrlUriType;
+        string jsonKeyValues;
     }
 
+    /**
+     * @dev specifies metadata for each individual token
+     * @param descriptor optional. contract address which stores tokenURI details
+     * @param tokenURI optional. plain off-chain URL to point to
+     * @param isOnChain whether the tokenURI info should be fetched from `onChainData`,
+     * or whether the tokenURI param should be used.
+     */
     struct TokenData {
-        address descriptor; // optional contract address which stores tokenURI details
-        string tokenURI; // optional URL to point to
-        bool isOnChain; // whether the tokenURI info should be fetched from `onChainData` mapping
+        address descriptor;
+        string tokenURI;
+        bool isOnChain;
     }
 
     // array of token data
@@ -60,10 +90,20 @@ contract FlexibleContract is Ownable, ERC721 {
         if (token.isOnChain) {
             OnChainData memory data = onChainData[tokenId];
             // base64 encode the image
-            string memory image = Base64.encode(bytes(data.image));
+            string memory image = buildURI(data.image, data.imageUriType);
+            image = string(abi.encodePacked('"image":"', image, '",'));
+            // check if animationUrl exists for this token, and if so process it
+            string memory animationUrl;
+            if (bytes(data.animationUrl).length != 0) {
+                animationUrl = buildURI(data.animationUrl, data.animationUrlUriType);
+                image = string(abi.encodePacked(image, '"animation_url":', animationUrl, '",'));
+            }
             // concat image and rest of json, then base64 encode it
             string memory json = Base64.encode(
-                abi.encodePacked('{ "image":"data:image/svg+xml;base64,', image, '",', data.jsonKeyValues,'}')
+                abi.encodePacked('{',
+                image,
+                data.jsonKeyValues, // NOTE: if there aren't any jsonKeyValues, the trailing comma on image will error the JSON
+                '}')
             );
             // prepend the base64 prefix
             return string(abi.encodePacked('data:application/json;base64,', json));
@@ -72,26 +112,36 @@ contract FlexibleContract is Ownable, ERC721 {
         return token.tokenURI;
     }
 
+    function buildURI(string memory uriValue, UriType uriType) public pure returns (string memory) {
+        if (uriType == UriType.SVG) {
+            return string(
+                abi.encodePacked(
+                    "data:image/svg+xml;base64,",
+                    Base64.encode(bytes(uriValue))
+                )
+            );
+        } else if (uriType == UriType.HTML) {
+            return string(
+                abi.encodePacked(
+                    "data:text/html;base64,",
+                    Base64.encode(bytes(uriValue))
+                )
+            );
+        }
+        
+        return uriValue;
+    }
+
     // ========================== ADMIN FUNCTIONS ==============================
     function mint(
-        address descriptor,
-        string calldata _tokenURI,
-        bool isOnChain,
-        string calldata image,
-        string calldata jsonKeyValues
+        TokenData calldata _tokenData,
+        OnChainData calldata _onChainData
     ) external onlyOwner {
         // save token data
-        tokens.push(TokenData({
-            descriptor: descriptor,
-            tokenURI: _tokenURI,
-            isOnChain: isOnChain
-        }));
+        tokens.push(_tokenData);
         // conditionally save on chain data
-        if (isOnChain) {
-            onChainData[nextTokenId] = OnChainData({
-                image: image,
-                jsonKeyValues: jsonKeyValues
-            });
+        if (_tokenData.isOnChain) {
+            onChainData[nextTokenId] = _onChainData;
         }
         // mint token
         _mint(msg.sender, nextTokenId++);
@@ -99,29 +149,18 @@ contract FlexibleContract is Ownable, ERC721 {
 
     function updateTokenData(
         uint256 tokenId,
-        address descriptor,
-        string calldata _tokenURI,
-        bool isOnChain,
-        string calldata image,
-        string calldata jsonKeyValues
+        TokenData calldata _tokenData,
+        OnChainData calldata _onChainData
     ) external onlyOwner {
         require(!isFrozen[tokenId], "Metadata frozen");
 
-        tokens[tokenId] = TokenData({
-            descriptor: descriptor,
-            tokenURI: _tokenURI,
-            isOnChain: isOnChain
-        });
+        tokens[tokenId] = _tokenData;
 
-        if (isOnChain) {
-            onChainData[nextTokenId] = OnChainData({
-                image: image,
-                jsonKeyValues: jsonKeyValues
-            });
+        if (_tokenData.isOnChain) {
+            onChainData[nextTokenId] = _onChainData;
         } else {
             delete onChainData[tokenId];
         }
-
     }
 
     function freezeMetadata(uint256 tokenId) external onlyOwner {
