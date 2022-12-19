@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deploy": "npx hardhat run --network goerli scripts/deployOracle.js",
+    "verify": "npx hardhat verify --network goerli 0x99eb96dee9Ad0930994f1f12e2c82f6E80985356",
+    "test": "npx hardhat test --network localhost"
   },
   "repository": {
     "type": "git",

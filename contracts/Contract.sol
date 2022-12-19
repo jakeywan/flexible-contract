@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/IDescriptor.sol";
 import { Base64 } from 'base64-sol/base64.sol';
 
-contract FlexibleContract is Ownable, ERC721 {
+contract Contract is Ownable, ERC721 {
     using Strings for uint256;
 
     // mint count tokenId tracker
@@ -91,20 +91,30 @@ contract FlexibleContract is Ownable, ERC721 {
             OnChainData memory data = onChainData[tokenId];
             // base64 encode the image
             string memory image = buildURI(data.image, data.imageUriType);
-            image = string(abi.encodePacked('"image":"', image, '",'));
+            image = string(abi.encodePacked('"image":"', image, '"'));
             // check if animationUrl exists for this token, and if so process it
             string memory animationUrl;
             if (bytes(data.animationUrl).length != 0) {
                 animationUrl = buildURI(data.animationUrl, data.animationUrlUriType);
-                image = string(abi.encodePacked(image, '"animation_url":', animationUrl, '",'));
+                image = string(abi.encodePacked(',', image, '"animation_url":', animationUrl, '"'));
             }
-            // concat image and rest of json, then base64 encode it
-            string memory json = Base64.encode(
-                abi.encodePacked('{',
-                image,
-                data.jsonKeyValues, // NOTE: if there aren't any jsonKeyValues, the trailing comma on image will error the JSON
-                '}')
-            );
+            string memory json;
+            if (bytes(data.jsonKeyValues).length != 0) {
+                // concat image and rest of json, then base64 encode it
+                json = Base64.encode(
+                    abi.encodePacked('{',
+                    image,
+                    ',',
+                    data.jsonKeyValues,
+                    '}')
+                );
+            } else {
+                // concat image and rest of json, then base64 encode it
+                json = Base64.encode(
+                    abi.encodePacked('{', image, '}')
+                );
+            }
+            
             // prepend the base64 prefix
             return string(abi.encodePacked('data:application/json;base64,', json));
         }
@@ -164,12 +174,9 @@ contract FlexibleContract is Ownable, ERC721 {
     }
 
     function freezeMetadata(uint256 tokenId) external onlyOwner {
-        // todo: set as frozen
+        // set token as frozen
         isFrozen[tokenId] = true;
-
-        // note: is this correct? alerts OpenSea and others
-        // todo: update for on chain data
-        emit PermanentURI(tokens[tokenId].tokenURI, tokenId);
+        emit PermanentURI(tokenURI(tokenId), tokenId);
     }
 
 }

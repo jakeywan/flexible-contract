@@ -32,9 +32,9 @@ module.exports = {
       accounts: [process.env.WALLET_PRIVATE_KEY],
     },
     hardhat: {
-      // forking: {
+      forking: {
         url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`
-      // }
+      }
     }
   },
   etherscan: {
