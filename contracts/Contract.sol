@@ -29,10 +29,10 @@ contract Contract is Ownable, ERC721 {
      * @dev only added for a token id if it is specified as `isOnChain`
      * @param image a plain string of the on chain work, either SVG, HTML, or
      * a wildcard data type (in which case uploader must handle base64 encoding)
-     * @param dataType specifies how the dataURI should be constructed. if wildcard,
+     * @param imageUriType specifies how the dataURI should be constructed. if wildcard,
      * the dataURI must be appended as part of the artwork
      * @param animationUrl optional value that may also be an on chain work
-     * @param animationUrlDataType data type of the optional animationUrl
+     * @param animationUrlUriType data type of the optional animationUrl
      * @param jsonKeyValues DO NOT INCLUDE CURLY BRACKETS, just the key-values.  the
      * brackets will be appended by the contract.
      */
