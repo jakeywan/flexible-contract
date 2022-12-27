@@ -16,6 +16,9 @@ contract Contract is Ownable, ERC721 {
     // OpenSea and others will pick this up, indicates metadata is frozen
     event PermanentURI(string _value, uint256 indexed _id);
 
+    // TODO: implement this
+    string public baseContractURI;
+
     /**
      * @dev specifies the type of URI requested for a string
      * @param SVG will append 'data:image/svg+xml;base64,' before base64 encoding this value
@@ -24,6 +27,19 @@ contract Contract is Ownable, ERC721 {
      * that is already properly encoded
      */
     enum UriType { SVG, HTML, URL }
+
+    /**
+     * @dev specifies metadata for each individual token
+     * @param descriptor optional. contract address which stores tokenURI details
+     * @param tokenURI optional. plain off-chain URL to point to
+     * @param isOnChain whether the tokenURI info should be fetched from `onChainData`,
+     * or whether the tokenURI param should be used.
+     */
+    struct TokenData {
+        address descriptor;
+        string tokenURI;
+        bool isOnChain;
+    }
 
     /**
      * @dev only added for a token id if it is specified as `isOnChain`
@@ -44,19 +60,6 @@ contract Contract is Ownable, ERC721 {
         string jsonKeyValues;
     }
 
-    /**
-     * @dev specifies metadata for each individual token
-     * @param descriptor optional. contract address which stores tokenURI details
-     * @param tokenURI optional. plain off-chain URL to point to
-     * @param isOnChain whether the tokenURI info should be fetched from `onChainData`,
-     * or whether the tokenURI param should be used.
-     */
-    struct TokenData {
-        address descriptor;
-        string tokenURI;
-        bool isOnChain;
-    }
-
     // array of token data
     TokenData[] public tokens;
 
@@ -68,10 +71,6 @@ contract Contract is Ownable, ERC721 {
     mapping(uint256 => bool) public isFrozen;
 
     // todo: opensea royalties
-
-    // todo: contractURI for contract/project level details
-
-    // todo: ability for admin to delete an accidentally minted token that is still owned by admin?
 
     constructor() ERC721("Jan Robert Leegte", "JRL") {}
 
@@ -91,12 +90,12 @@ contract Contract is Ownable, ERC721 {
             OnChainData memory data = onChainData[tokenId];
             // base64 encode the image
             string memory image = buildURI(data.image, data.imageUriType);
-            image = string(abi.encodePacked('"image":"', image, '"'));
+            image = string(abi.encodePacked('"image": "', image, '"'));
             // check if animationUrl exists for this token, and if so process it
             string memory animationUrl;
             if (bytes(data.animationUrl).length != 0) {
                 animationUrl = buildURI(data.animationUrl, data.animationUrlUriType);
-                image = string(abi.encodePacked(',', image, '"animation_url":', animationUrl, '"'));
+                image = string(abi.encodePacked(image, ', "animation_url": "', animationUrl, '"'));
             }
             string memory json;
             if (bytes(data.jsonKeyValues).length != 0) {
@@ -104,7 +103,7 @@ contract Contract is Ownable, ERC721 {
                 json = Base64.encode(
                     abi.encodePacked('{',
                     image,
-                    ',',
+                    ', ',
                     data.jsonKeyValues,
                     '}')
                 );
@@ -142,6 +141,13 @@ contract Contract is Ownable, ERC721 {
         return uriValue;
     }
 
+    /**
+     * @dev Returns contract-level metadata details
+     */
+    function contractURI() public view returns (string memory) {
+        return baseContractURI;
+    }
+
     // ========================== ADMIN FUNCTIONS ==============================
     function mint(
         TokenData calldata _tokenData,
@@ -167,6 +173,8 @@ contract Contract is Ownable, ERC721 {
         tokens[tokenId] = _tokenData;
 
         if (_tokenData.isOnChain) {
+            // delete and then add, otherwise you can't null out values
+            delete onChainData[nextTokenId];
             onChainData[nextTokenId] = _onChainData;
         } else {
             delete onChainData[tokenId];
@@ -174,9 +182,26 @@ contract Contract is Ownable, ERC721 {
     }
 
     function freezeMetadata(uint256 tokenId) external onlyOwner {
+        // TODO: double check this implementation
         // set token as frozen
         isFrozen[tokenId] = true;
         emit PermanentURI(tokenURI(tokenId), tokenId);
+    }
+
+    /**
+     * @dev Let owner update base contract level metadata
+     */
+    function updateBaseContractURI(string memory _baseContractURI) external onlyOwner {
+        baseContractURI = _baseContractURI;
+    }
+
+    /**
+     * @dev Let contract owner delete a token mistakenly minted, as long as it isn't owned
+     * by anybody
+     */
+    function burn(uint256 tokenId) external onlyOwner {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner nor approved");
+        _burn(tokenId);
     }
 
 }

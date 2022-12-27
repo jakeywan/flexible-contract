@@ -70,14 +70,11 @@ describe('Contract', () => {
         tokenURI: "",
         isOnChain: true
       }, {
-        image: `<svg height="100" width="100">
-        <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
-        Sorry, your browser does not support inline SVG.  
-      </svg>`,
-        imageUriType: 0,
-        animationUrl: "",
-        animationUrlUriType: 0,
-        jsonKeyValues: ''
+        image: `<svg>bla</svg>`,
+        imageUriType: 0, // 0 == 1st option in UriType, "SVG"
+        animationUrl: "https://www.leegte.org/nft/bla.html",
+        animationUrlUriType: 2, // 2 == 3rd option in UriType enum, "URL"
+        jsonKeyValues: '"name": "bla", "description: "bla", "external_url": "project website"'
       })
     await mint.wait()
 

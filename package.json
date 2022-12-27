@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "deploy": "npx hardhat run --network goerli scripts/deploy.js",
-    "verify": "npx hardhat verify --network goerli 0x4990eE12E3FbAE3bba41BfF86b7183960ad5E07a",
+    "verify": "npx hardhat verify --network goerli 0x044557D3f405A778fE8175cD1c9FA0AC906e6A56",
     "test": "npx hardhat test --network localhost"
   },
   "repository": {
