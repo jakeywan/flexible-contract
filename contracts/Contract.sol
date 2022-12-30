@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/IDescriptor.sol";
 import { Base64 } from 'base64-sol/base64.sol';
 
-contract Contract is Ownable, ERC721 {
+contract Leegte is Ownable, ERC721 {
     using Strings for uint256;
 
     // mint count tokenId tracker
@@ -16,7 +16,7 @@ contract Contract is Ownable, ERC721 {
     // OpenSea and others will pick this up, indicates metadata is frozen
     event PermanentURI(string _value, uint256 indexed _id);
 
-    // TODO: implement this
+    // contract level details
     string public baseContractURI;
 
     /**
@@ -27,19 +27,6 @@ contract Contract is Ownable, ERC721 {
      * that is already properly encoded
      */
     enum UriType { SVG, HTML, URL }
-
-    /**
-     * @dev specifies metadata for each individual token
-     * @param descriptor optional. contract address which stores tokenURI details
-     * @param tokenURI optional. plain off-chain URL to point to
-     * @param isOnChain whether the tokenURI info should be fetched from `onChainData`,
-     * or whether the tokenURI param should be used.
-     */
-    struct TokenData {
-        address descriptor;
-        string tokenURI;
-        bool isOnChain;
-    }
 
     /**
      * @dev only added for a token id if it is specified as `isOnChain`
@@ -60,17 +47,20 @@ contract Contract is Ownable, ERC721 {
         string jsonKeyValues;
     }
 
-    // array of token data
-    TokenData[] public tokens;
+    /// @dev the following three mappings store different kinds of tokenURI data.
+    /// only one of them is needed per tokenId.
+
+    // mapping of optional tokenURI strings per tokenId (if applicable)
+    mapping(uint256 => string) public urisByTokenId;
+
+    // mapping of optional descriptor address per tokenId (diverts tokenURI call)
+    mapping(uint256 => address) public descriptorsByTokenId;
 
     // mapping of on chain token data (if applicable) by tokenId
-    mapping(uint256 => OnChainData) public onChainData;
+    mapping(uint256 => OnChainData) public onChainDataByTokenId;
 
-    // mapping of whether token metadata is frozen. putting this here instead of
-    // in struct so a token isn't accidentally initialized with frozen metadata.
+    // mapping of whether token metadata is frozen
     mapping(uint256 => bool) public isFrozen;
-
-    // todo: opensea royalties
 
     constructor() ERC721("Jan Robert Leegte", "JRL") {}
 
@@ -80,20 +70,20 @@ contract Contract is Ownable, ERC721 {
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), "URI query for nonexistent token");
 
-        TokenData memory token = tokens[tokenId];
-
-        if (token.descriptor != address(0)) {
-            return IDescriptor(token.descriptor).tokenURI(tokenId);
+        // check for descriptor diversion
+        if (descriptorsByTokenId[tokenId] != address(0)) {
+            return IDescriptor(descriptorsByTokenId[tokenId]).tokenURI(tokenId);
         }
 
-        if (token.isOnChain) {
-            OnChainData memory data = onChainData[tokenId];
+        // check on chain data
+        if (bytes(onChainDataByTokenId[tokenId].image).length != 0) {
+            OnChainData memory data = onChainDataByTokenId[tokenId];
             // base64 encode the image
             string memory image = buildURI(data.image, data.imageUriType);
             image = string(abi.encodePacked('"image": "', image, '"'));
             // check if animationUrl exists for this token, and if so process it
-            string memory animationUrl;
             if (bytes(data.animationUrl).length != 0) {
+                string memory animationUrl;
                 animationUrl = buildURI(data.animationUrl, data.animationUrlUriType);
                 image = string(abi.encodePacked(image, ', "animation_url": "', animationUrl, '"'));
             }
@@ -118,7 +108,8 @@ contract Contract is Ownable, ERC721 {
             return string(abi.encodePacked('data:application/json;base64,', json));
         }
 
-        return token.tokenURI;
+        // else return basic tokenUri
+        return urisByTokenId[tokenId];
     }
 
     function buildURI(string memory uriValue, UriType uriType) public pure returns (string memory) {
@@ -149,36 +140,56 @@ contract Contract is Ownable, ERC721 {
     }
 
     // ========================== ADMIN FUNCTIONS ==============================
+    /**
+     * @dev Accepts two bits of data, which are mutually exclusive. pass in null
+     * values for the one you're not going to use.
+     * @param _uri a string representing an off-chain URL/URI to point to
+     * @param _onChainData optional OnChainData struct, if work is on chain
+     */
     function mint(
-        TokenData calldata _tokenData,
+        string calldata _uri,
         OnChainData calldata _onChainData
     ) external onlyOwner {
-        // save token data
-        tokens.push(_tokenData);
+        // save urisByTokenId data
+        urisByTokenId[nextTokenId] = _uri;
         // conditionally save on chain data
-        if (_tokenData.isOnChain) {
-            onChainData[nextTokenId] = _onChainData;
+        if (bytes(_onChainData.image).length != 0) {
+            onChainDataByTokenId[nextTokenId] = _onChainData;
         }
         // mint token
         _mint(msg.sender, nextTokenId++);
     }
 
+    /**
+     * @dev see mint function for params. to delete simply pass in null values
+     */
     function updateTokenData(
         uint256 tokenId,
-        TokenData calldata _tokenData,
+        string calldata _uri,
         OnChainData calldata _onChainData
     ) external onlyOwner {
         require(!isFrozen[tokenId], "Metadata frozen");
 
-        tokens[tokenId] = _tokenData;
+        urisByTokenId[tokenId] = _uri;
 
-        if (_tokenData.isOnChain) {
+        if (bytes(_onChainData.image).length != 0) {
             // delete and then add, otherwise you can't null out values
-            delete onChainData[nextTokenId];
-            onChainData[nextTokenId] = _onChainData;
+            delete onChainDataByTokenId[tokenId];
+            onChainDataByTokenId[tokenId] = _onChainData;
         } else {
-            delete onChainData[tokenId];
+            delete onChainDataByTokenId[tokenId];
         }
+    }
+
+    /**
+     * @dev Setting this will divert tokenURI calls to the address indicated. set
+     * to null address to delete the value.
+     */
+    function updateDescriptor(
+        uint256 tokenId,
+        address descriptor
+    ) external onlyOwner {
+        descriptorsByTokenId[tokenId] = descriptor;
     }
 
     function freezeMetadata(uint256 tokenId) external onlyOwner {
