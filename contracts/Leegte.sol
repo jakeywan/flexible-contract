@@ -1,6 +1,31 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.17;
 
+/**
+          _____            _____                    _____                    _____                _____                    _____          
+         /\    \          /\    \                  /\    \                  /\    \              /\    \                  /\    \         
+        /::\____\        /::\    \                /::\    \                /::\    \            /::\    \                /::\    \        
+       /:::/    /       /::::\    \              /::::\    \              /::::\    \           \:::\    \              /::::\    \       
+      /:::/    /       /::::::\    \            /::::::\    \            /::::::\    \           \:::\    \            /::::::\    \      
+     /:::/    /       /:::/\:::\    \          /:::/\:::\    \          /:::/\:::\    \           \:::\    \          /:::/\:::\    \     
+    /:::/    /       /:::/__\:::\    \        /:::/__\:::\    \        /:::/  \:::\    \           \:::\    \        /:::/__\:::\    \    
+   /:::/    /       /::::\   \:::\    \      /::::\   \:::\    \      /:::/    \:::\    \          /::::\    \      /::::\   \:::\    \   
+  /:::/    /       /::::::\   \:::\    \    /::::::\   \:::\    \    /:::/    / \:::\    \        /::::::\    \    /::::::\   \:::\    \  
+ /:::/    /       /:::/\:::\   \:::\    \  /:::/\:::\   \:::\    \  /:::/    /   \:::\ ___\      /:::/\:::\    \  /:::/\:::\   \:::\    \ 
+/:::/____/       /:::/__\:::\   \:::\____\/:::/__\:::\   \:::\____\/:::/____/  ___\:::|    |    /:::/  \:::\____\/:::/__\:::\   \:::\____\
+\:::\    \       \:::\   \:::\   \::/    /\:::\   \:::\   \::/    /\:::\    \ /\  /:::|____|   /:::/    \::/    /\:::\   \:::\   \::/    /
+ \:::\    \       \:::\   \:::\   \/____/  \:::\   \:::\   \/____/  \:::\    /::\ \::/    /   /:::/    / \/____/  \:::\   \:::\   \/____/ 
+  \:::\    \       \:::\   \:::\    \       \:::\   \:::\    \       \:::\   \:::\ \/____/   /:::/    /            \:::\   \:::\    \     
+   \:::\    \       \:::\   \:::\____\       \:::\   \:::\____\       \:::\   \:::\____\    /:::/    /              \:::\   \:::\____\    
+    \:::\    \       \:::\   \::/    /        \:::\   \::/    /        \:::\  /:::/    /    \::/    /                \:::\   \::/    /    
+     \:::\    \       \:::\   \/____/          \:::\   \/____/          \:::\/:::/    /      \/____/                  \:::\   \/____/     
+      \:::\    \       \:::\    \               \:::\    \               \::::::/    /                                 \:::\    \         
+       \:::\____\       \:::\____\               \:::\____\               \::::/    /                                   \:::\____\        
+        \::/    /        \::/    /                \::/    /                \::/____/                                     \::/    /        
+         \/____/          \/____/                  \/____/                                                                \/____/         
+                                                                                                                                          
+ */
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -12,9 +37,6 @@ contract Leegte is Ownable, ERC721 {
 
     // mint count tokenId tracker
     uint256 public nextTokenId;
-
-    // OpenSea and others will pick this up, indicates metadata is frozen
-    event PermanentURI(string _value, uint256 indexed _id);
 
     // contract level details
     string public baseContractURI;
@@ -58,9 +80,6 @@ contract Leegte is Ownable, ERC721 {
 
     // mapping of on chain token data (if applicable) by tokenId
     mapping(uint256 => OnChainData) public onChainDataByTokenId;
-
-    // mapping of whether token metadata is frozen
-    mapping(uint256 => bool) public isFrozen;
 
     constructor() ERC721("Jan Robert Leegte", "JRL") {}
 
@@ -141,7 +160,7 @@ contract Leegte is Ownable, ERC721 {
 
     // ========================== ADMIN FUNCTIONS ==============================
     /**
-     * @dev Accepts two bits of data, which are mutually exclusive. pass in null
+     * @dev Accepts two bits of data which are mutually exclusive. pass in null
      * values for the one you're not going to use.
      * @param _uri a string representing an off-chain URL/URI to point to
      * @param _onChainData optional OnChainData struct, if work is on chain
@@ -168,8 +187,6 @@ contract Leegte is Ownable, ERC721 {
         string calldata _uri,
         OnChainData calldata _onChainData
     ) external onlyOwner {
-        require(!isFrozen[tokenId], "Metadata frozen");
-
         urisByTokenId[tokenId] = _uri;
 
         if (bytes(_onChainData.image).length != 0) {
@@ -190,13 +207,6 @@ contract Leegte is Ownable, ERC721 {
         address descriptor
     ) external onlyOwner {
         descriptorsByTokenId[tokenId] = descriptor;
-    }
-
-    function freezeMetadata(uint256 tokenId) external onlyOwner {
-        // TODO: double check this implementation
-        // set token as frozen
-        isFrozen[tokenId] = true;
-        emit PermanentURI(tokenURI(tokenId), tokenId);
     }
 
     /**

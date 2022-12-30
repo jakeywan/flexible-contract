@@ -95,15 +95,23 @@ describe('Contract', () => {
     expect(await tokenContract.balanceOf(deployerAddress)).to.equal(3)
   })
 
-  it('Should freeze token', async () => {
-    await tokenContract.freezeMetadata(0)
-    expect(await tokenContract.isFrozen(0)).to.equal(true)
+  it('Should burn token', async () => {
+    const update = await tokenContract.burn(0)
+    await update.wait()
 
-    expect(tokenContract.updateTokenData(0, 0, 0)).to.be.revertedWith("Metadata frozen")
+    expect(tokenContract.ownerOf(0)).to.be.reverted
+  })
+
+  it('Should update base contract URI', async () => {
+    const update = await tokenContract.updateBaseContractURI('https://test.com')
+    await update.wait()
+
+    expect(await tokenContract.contractURI()).to.equal('https://test.com')
+
   })
 
   it('Should run to print latest results', async () => {
-    expect(await tokenContract.balanceOf(deployerAddress)).to.equal(3)
+    expect(await tokenContract.balanceOf(deployerAddress)).to.equal(2)
   })
 
 })
