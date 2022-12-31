@@ -36,6 +36,8 @@ function exec () {
     finalString += `, '${JSON.stringify(JSON.parse(extraMetadataFields)).replace(/\s+/g, ' ').slice(0, -1).slice(1)}'`
   }
 
+  finalString += ']'
+
   console.log(finalString)
   return finalString
 }
