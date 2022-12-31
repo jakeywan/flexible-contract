@@ -26,6 +26,7 @@ pragma solidity ^0.8.17;
                                                                                                                                           
  */
 
+/// @author Jake Allen
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -159,6 +160,7 @@ contract Leegte is Ownable, ERC721 {
     }
 
     // ========================== ADMIN FUNCTIONS ==============================
+    
     /**
      * @dev Accepts two bits of data which are mutually exclusive. pass in null
      * values for the one you're not going to use.
