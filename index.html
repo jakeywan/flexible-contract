@@ -1,0 +1,217 @@
+<html>
+  <head>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"
+      type="application/javascript"></script>
+    <script>
+      /**
+       * TODO: Remove this note before deploying
+       * Note: window.ethereum is not inject by Metamask for static files. If you
+       * want to run this locally, you need to serve the page from a local server,
+       * for example `python -m SimpleHTTPServer 8000` then load the page at
+       * localhost:8000/path/to/index.html
+       */
+      window.onload = () => {
+
+        // TODO: update to final contract address before deploy
+        const contractAddress = '0xc77E10614D33a1dE721f047EA97307f434Bcf210'
+        // TODO: update to final contract ABI before deploy
+        const contractAbi = '[{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"baseContractURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"uriValue","type":"string"},{"internalType":"enum Leegte.UriType","name":"uriType","type":"uint8"}],"name":"buildURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"contractURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"descriptorsByTokenId","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_uri","type":"string"},{"components":[{"internalType":"string","name":"image","type":"string"},{"internalType":"enum Leegte.UriType","name":"imageUriType","type":"uint8"},{"internalType":"string","name":"animationUrl","type":"string"},{"internalType":"enum Leegte.UriType","name":"animationUrlUriType","type":"uint8"},{"internalType":"string","name":"jsonKeyValues","type":"string"}],"internalType":"struct Leegte.OnChainData","name":"_onChainData","type":"tuple"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nextTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"onChainDataByTokenId","outputs":[{"internalType":"string","name":"image","type":"string"},{"internalType":"enum Leegte.UriType","name":"imageUriType","type":"uint8"},{"internalType":"string","name":"animationUrl","type":"string"},{"internalType":"enum Leegte.UriType","name":"animationUrlUriType","type":"uint8"},{"internalType":"string","name":"jsonKeyValues","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_baseContractURI","type":"string"}],"name":"updateBaseContractURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"address","name":"descriptor","type":"address"}],"name":"updateDescriptor","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"string","name":"_uri","type":"string"},{"components":[{"internalType":"string","name":"image","type":"string"},{"internalType":"enum Leegte.UriType","name":"imageUriType","type":"uint8"},{"internalType":"string","name":"animationUrl","type":"string"},{"internalType":"enum Leegte.UriType","name":"animationUrlUriType","type":"uint8"},{"internalType":"string","name":"jsonKeyValues","type":"string"}],"internalType":"struct Leegte.OnChainData","name":"_onChainData","type":"tuple"}],"name":"updateTokenData","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"urisByTokenId","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}]'
+        // TODO: change `rinkeby` to `homestead` before deploying
+        let provider = new ethers.providers.InfuraProvider('sepolia', {
+          projectId: 'f5e3ab65705b47ec9bcfa83c01d973f9'
+        })
+
+        //================== METAMASK ONLY FUNCTIONS =========================
+        
+        // TODO: maybe disable connect button on page?
+        if (!window.ethereum) console.log('Metamask not installed')
+
+        //====================== MINT =========================================
+
+        document.getElementById('mint').onclick = async () => {
+          const provider = new ethers.providers.Web3Provider(window.ethereum)
+          var signer = provider.getSigner()
+          let contract = await new ethers.Contract(contractAddress, contractAbi, signer)
+
+          const uriTypesMap = ["svg", "html", "url"]
+          // get values
+          const imageUri = document.querySelector("#imageUri").value
+          const imageUriType = document.querySelector("#imageUriType").value
+          const imageUriTypeInt = uriTypesMap.indexOf(imageUriType)
+          const animationUri = document.querySelector("#animationUri").value
+          const animationUriType = document.querySelector("#animationUriType").value
+          const animationUriTypeInt = uriTypesMap.indexOf(animationUriType)
+          const jsonValues = document.querySelector("#jsonValues").value
+          const url = document.querySelector("#url").value
+          console.log(imageUri, imageUriType, imageUriTypeInt, animationUri, animationUriType, animationUriTypeInt, jsonValues, url)
+
+          let txn
+
+          if (document.querySelector(".mintOrUpdate").value == "mint") {
+            txn = await contract.mint(url, {
+                image: imageUri,
+                imageUriType: imageUriTypeInt,
+                animationUrl: animationUri,
+                animationUrlUriType: animationUriTypeInt,
+                jsonKeyValues: jsonValues
+            }).catch(err => {
+                window.alert(JSON.stringify.err)
+            })
+          } else {
+            const tokenId = document.querySelector(".tokenId").value
+            txn = await contract.updateTokenData(tokenId, url, {
+                image: imageUri,
+                imageUriType: imageUriTypeInt,
+                animationUrl: animationUri,
+                animationUrlUriType: animationUriTypeInt,
+                jsonKeyValues: jsonValues
+            }).catch(err => {
+                window.alert(JSON.stringify.err)
+            })
+          }
+          
+          // TODO: remove `rinkeby` subdomain before deploying
+          document.getElementById('info').innerHTML = `transaction processing, view at https://sepolia.etherscan.io/tx/${txn.hash}`
+          const receipt = await txn.wait()
+          if (receipt.status === 1) {
+            const tokenIdHash = receipt.events[1].topics[1]
+            const tokenId = ethers.BigNumber.from(tokenIdHash).toNumber()
+            console.log('token id minted: ', tokenId)
+            console.log('mint successful: ', receipt.transactionHash)
+            console.log('from user: ', receipt.from)
+          }
+
+        }
+
+        //======================== CONNECT ====================================
+        
+        document.getElementById('connect').onclick = async () => {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+          document.getElementById('info').innerHTML = `connected: ${accounts[0]}`
+        }
+
+        //======================== SET UP SELECT EVENT LISTENER ===============
+        const selectElement = document.querySelector(".onOrOffChain");
+        const onChainForm = document.querySelector(".onChainForm");
+        const offChainForm = document.querySelector(".offChainForm");
+
+
+        selectElement.addEventListener("change", (event) => {
+            console.log(event.target.value)
+            if (event.target.value == "onChain") {
+                onChainForm.style.display = "block";
+                offChainForm.style.display = "none";
+            } else {
+                onChainForm.style.display = "none";
+                offChainForm.style.display = "block";
+            }
+        });
+
+        const mintOrUpdateElement = document.querySelector(".mintOrUpdate")
+        mintOrUpdateElement.addEventListener("change", (e) => {
+            console.log(e.target.value)
+            document.querySelector(".tokenId").style.display = e.target.value == "mint" ? "none" : "block"
+        })
+        
+      }
+    </script>
+
+    <style>
+        textarea, input {
+            margin-top: 16px;
+            width: 100%;
+        }
+        label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        button {
+            margin-top: 16px;
+        }
+    </style>
+  </head>
+  <body>
+    <button id='connect'>Connect</button>
+
+    <div style="padding-top: 16px; padding-bottom: 16px;">
+        <select name="mintOrUpdate" class="select mintOrUpdate">
+            <option disabled selected value> -- select an option -- </option>
+            <option value="mint">Mint a new token</option>
+            <option value="update">Update an existing token</option>
+        </select>
+    </div>
+
+    <div>
+        <input
+            type="text"
+            placeholder="Token ID to update"
+            class="input tokenId"
+            style="display: none; margin-bottom: 16px; margin-top: 0px;"
+        />
+    </div>
+
+    <label for="uriType">Select metadata type:</label>
+    <select name="uriType" class="select onOrOffChain">
+        <option disabled selected value> -- select an option -- </option>
+        <option value="onChain">On Chain</option>
+        <option value="offChain">Off Chain</option>
+    </select>
+
+    <div style="background: lightgray; padding: 8; margin-top: 8;">
+        <h3 style="margin: 0; margin-bottom: 16px;">Token metadata</h3>
+          <div class="onChainForm" style="display: none;">
+            <div>
+              <label for="imageUriType">Image URI Type:</label>
+              <select name="imageUriType" value="imageUriType" id="imageUriType">
+                <option value="svg">SVG</option>
+                <option value="html">HTML</option>
+                <option value="url">Plain URL (URL will not do any transformations. pass a plain URL string or a data URI)</option>
+              </select>
+            </div>
+            <textarea
+              id="imageUri"
+              placeholder="Image (string)"
+              value="imageUri"
+            ></textarea>
+
+            
+            <div style="margin-top: 16px;">
+              <label for="animationUriType">Animation URI Type:</label>
+              <select name="animationUriType" value="animationUriType" id="animationUriType">
+                <option value="svg">SVG</option>
+                <option value="html">HTML</option>
+                <option value="url">Plain URL (URL will not do any transformations. pass a plain URL string or a data URI)</option>
+              </select>
+            </div>
+            <textarea
+              id="animationUri"
+              placeholder="Animation (string)"
+              value="animationUri"
+            ></textarea>
+
+            <div>
+                <textarea
+                    id="jsonValues"
+                    placeholder="JSON key value pairs (don't include curly brackets at the ends, just the comma-separated values)"
+                    value="jsonValues"
+                ></textarea>
+            </div>
+          </div>
+          <div class="offChainForm" style="display: none;">
+            <input
+              type="text"
+              placeholder="Url (a plain URL string pointing to token metadata/json; can be a server or IPFS)"
+              className="input"
+              id="url"
+              style="margin-top: 0px !important;"
+            />
+          </div>
+        </div>
+        <button id="mint">SUBMIT</button>
+    <div id='info'></div>
+    <div id='supply'></div>
+  </body>
+</html>

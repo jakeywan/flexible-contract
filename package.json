@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "npx hardhat run --network goerli scripts/deploy.js",
-    "verify": "npx hardhat verify --network goerli 0x8091c95e5614d979ee81f26C3Ee0cdF2e6524157",
-    "test": "npx hardhat test --network localhost"
+    "deploy": "npx hardhat run --network sepolia scripts/deploy.js",
+    "verify": "npx hardhat verify --network sepolia 0xc77E10614D33a1dE721f047EA97307f434Bcf210",
+    "test": "npx hardhat test --network localhost",
+    "start": "python3 -m http.server"
   },
   "repository": {
     "type": "git",
@@ -19,20 +20,22 @@
   },
   "homepage": "https://github.com/jakeywan/flexible-contract#readme",
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.2",
-    "@nomiclabs/hardhat-etherscan": "^2.1.2",
-    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.5",
     "@openzeppelin/contracts": "^4.1.0",
     "@openzeppelin/contracts-upgradeable": "^4.1.0",
     "base64-sol": "^1.1.0",
     "chai": "^4.3.4",
     "dotenv": "^16.0.3",
     "ethereum-waffle": "^3.3.0",
-    "ethers": "^5.0.32",
-    "hardhat": "^2.6.0",
+    "hardhat": "^2.14.0",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.2.27",
     "prettier-plugin-solidity": "^1.0.0-beta.12",
     "recursive-fs": "^2.1.0"
+  },
+  "dependencies": {
+    "@nomiclabs/hardhat-etherscan": "^3.1.7",
+    "ethers": "^6.3.0"
   }
 }

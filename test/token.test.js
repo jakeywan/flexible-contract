@@ -44,7 +44,7 @@ describe('Contract', () => {
         imageUriType: 0,
         animationUrl: "",
         animationUrlUriType: 0,
-        jsonKeyValues: '"exampleMetadata": "test", "anotherExample": "testTwo"'
+        jsonKeyValues: '"name":"Broken Images No.23","description":"Jan Robert Leegte, 2023","attributes":[{"trait_type":"Series","value":"Broken Images"}]'
       })
     await mint.wait()
 
